@@ -12,17 +12,22 @@
     <div class="sidebar">
         <div class="brand">ATS STAFF</div>
         
-        <a href="#" class="nav-item active" id="btn-verify-nav">
+        <a href="#attendance-section" class="nav-item active" id="btn-attendance-nav">
+            <i class="fas fa-camera" style="margin-right: 10px;"></i>
+            Take Attendance
+        </a>
+
+        <a href="#verification-section" class="nav-item" id="btn-verify-nav">
             <i class="fas fa-user-check" style="margin-right: 10px;"></i>
             Verify Image
         </a>
         
-        <a href="#" class="nav-item">
+        <a href="#attendance-results" class="nav-item" id="btn-student-list-nav">
             <i class="fas fa-list-alt" style="margin-right: 10px;"></i>
             Student List
         </a>
 
-        <div style="position: absolute; bottom: 2rem; width: calc(100% - 2rem);">
+        <div class="sidebar-footer">
             <a href="/logout" class="nav-item" style="color: var(--danger-red);">
                 <i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>
                 Logout
@@ -31,26 +36,125 @@
     </div>
 
     <div class="main-content">
-        <h1 class="header-title">Image Verification Queue</h1>
+        <h1 class="header-title">Staff Dashboard</h1>
 
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-label">Pending Reviews</div>
-                <div class="stat-value" id="pending-count">0</div>
-            </div>
-            <div class="stat-card" style="border-left-color: var(--success-green);">
-                <div class="stat-label" style="color: var(--success-green);">Total Approved</div>
-                <div class="stat-value" id="approved-count">0</div> 
-            </div>
-        </div>
-
-        <div class="action-card">
-            <div class="feedback-msg" style="color: var(--sidebar-text); margin-bottom: 1.5rem;">
-                Review the following student profile photos. These have passed RetinaFace quality checks.
+        <section class="action-card attendance-card dashboard-section" id="attendance-section">
+            <div class="attendance-card-header">
+                <div>
+                    <h2 class="section-title">Take Attendance</h2>
+                    <p class="section-copy">
+                        Upload a classroom image, preview it in a fixed layout, and populate the present and absent lists after your ArcFace backend responds.
+                    </p>
+                </div>
+                <span class="attendance-badge">ArcFace Ready</span>
             </div>
 
-            <div id="student-image-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;"></div>
-        </div>
+            <div class="attendance-layout">
+                <div class="upload-box attendance-upload-box">
+                    <input type="file" id="classroomImage" accept="image/png, image/jpeg, image/jpg" hidden>
+
+                    <div class="upload-illustration">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+
+                    <h3 class="upload-title">Upload Classroom Image</h3>
+                    <p class="upload-copy">
+                        Select a clear classroom photo that includes the students you want to process for attendance.
+                    </p>
+
+                    <label for="classroomImage" class="btn-upload attendance-trigger">Choose Image</label>
+                    <div class="file-pill" id="classroomFileName">No image selected</div>
+                    <p class="upload-hint">Supported formats: JPG, JPEG, PNG</p>
+                </div>
+
+                <div class="attendance-preview-panel">
+                    <div class="preview-frame">
+                        <img id="classroomPreviewImage" class="classroom-preview-image" alt="Classroom preview">
+                        <div class="preview-placeholder" id="classroomPreviewPlaceholder">
+                            <i class="fas fa-image"></i>
+                            <span>Uploaded classroom image preview will appear here.</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-footer">
+                        <button type="button" class="btn-upload process-btn" id="processAttendanceBtn">Process Attendance</button>
+                        <p class="preview-note">
+                            Connect this button to your backend process and replace the placeholder preview when the image is selected.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="attendance-results-header">
+                <div>
+                    <h3 class="results-title">Attendance Result</h3>
+                    <p class="results-copy">
+                        Use the two columns below to show the students marked present and absent for the uploaded classroom image.
+                    </p>
+                </div>
+
+                <div class="result-toggle-group">
+                    <button type="button" class="result-toggle-btn active" id="presentViewBtn">Present</button>
+                    <button type="button" class="result-toggle-btn" id="absentViewBtn">Absent</button>
+                </div>
+            </div>
+
+            <div class="attendance-results-grid" id="attendance-results">
+                <div class="attendance-column present-column">
+                    <div class="attendance-column-header">
+                        <div>
+                            <div class="column-eyebrow">Matched Faces</div>
+                            <h4>Present Students</h4>
+                        </div>
+                        <span class="result-count" id="presentCount">0</span>
+                    </div>
+
+                    <div class="attendance-list" id="presentStudentsList">
+                        <div class="student-pill placeholder-pill">Present roll numbers will appear here after processing.</div>
+                    </div>
+                </div>
+
+                <div class="attendance-column absent-column">
+                    <div class="attendance-column-header">
+                        <div>
+                            <div class="column-eyebrow">Missing Faces</div>
+                            <h4>Absent Students</h4>
+                        </div>
+                        <span class="result-count" id="absentCount">0</span>
+                    </div>
+
+                    <div class="attendance-list" id="absentStudentsList">
+                        <div class="student-pill placeholder-pill">Absent roll numbers will appear here after processing.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="verification-section" class="dashboard-section section-hidden">
+            <div class="section-heading">
+                <h2 class="section-title">Image Verification Queue</h2>
+                <p class="section-copy">Review the student profile photos that passed RetinaFace quality checks.</p>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-label">Pending Reviews</div>
+                    <div class="stat-value" id="pending-count">0</div>
+                </div>
+                <div class="stat-card" style="border-left-color: var(--success-green);">
+                    <div class="stat-label" style="color: var(--success-green);">Total Approved</div>
+                    <div class="stat-value" id="approved-count">0</div> 
+                </div>
+            </div>
+
+            <div class="action-card">
+                <div class="feedback-msg" style="color: var(--sidebar-text); margin-bottom: 1.5rem;">
+                    Review the following student profile photos. These have passed RetinaFace quality checks.
+                </div>
+
+                <div id="student-image-grid" class="student-image-grid"></div>
+            </div>
+        </section>
     </div>
     <script src="js/staff_dash.js"></script>
 </body>

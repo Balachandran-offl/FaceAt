@@ -8,6 +8,10 @@ const FormData = require('form-data');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const jwt = require('jsonwebtoken');
+const mongoose = require("mongoose");
+const EMBEDDINGS_COLLECTION = process.env.EMBEDDINGS_COLLECTION || "studentEmbeddings";
+const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "http://localhost:8000";
+
 router.post('/verify-quality', upload.single('profileImage'), async (req, res) => {
     try {
         if (!req.file) {
@@ -28,7 +32,7 @@ router.post('/verify-quality', upload.single('profileImage'), async (req, res) =
             contentType: req.file.mimetype,
         });
 
-        const pythonResponse = await axios.post('http://localhost:8000/score', form, {
+        const pythonResponse = await axios.post(`${PYTHON_SERVICE_URL}/score`, form, {
             headers: { ...form.getHeaders() }
         });
 
@@ -36,12 +40,16 @@ router.post('/verify-quality', upload.single('profileImage'), async (req, res) =
         if (score >= 0.8) {
 
             const bucket = getBucket();
+            const db = mongoose.connection.db;
 
             // Replace any existing image for this student before saving the new one
             const existingFiles = await bucket.find({ "metadata.email": email }).toArray();
             for (const file of existingFiles) {
                 await bucket.delete(file._id);
             }
+
+            // Remove any older embedding so only staff-approved images can recreate it.
+            await db.collection(EMBEDDINGS_COLLECTION).deleteMany({ email });
 
             const uploadStream = bucket.openUploadStream(req.file.originalname, {
                 metadata: {
@@ -53,7 +61,11 @@ router.post('/verify-quality', upload.single('profileImage'), async (req, res) =
                 contentType: req.file.mimetype
             });
 
-            uploadStream.end(req.file.buffer);
+            await new Promise((resolve, reject) => {
+                uploadStream.on("finish", resolve);
+                uploadStream.on("error", reject);
+                uploadStream.end(req.file.buffer);
+            });
 
         }
         return res.json({
@@ -62,8 +74,10 @@ router.post('/verify-quality', upload.single('profileImage'), async (req, res) =
         });
 
     } catch (error) {
-        console.error("Internal Error:", error.message);
-        res.status(500).json({ message: "Error connecting to quality service" });
+        console.error("Internal Error:", error);
+        res.status(500).json({
+            message: error.message || "Error during image quality verification"
+        });
     }
 });
 

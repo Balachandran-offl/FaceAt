@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Elements Selection
+    setupAttendenceModule();
     const studentPhoto = document.getElementById('studentPhoto');
     const uploadTriggerBtn = document.getElementById('uploadTriggerBtn');
     const analyzeBtn = document.getElementById('analyzeBtn');
@@ -173,7 +174,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             localStorage.clear();
-            window.location.href = 'login.html';
+            window.location.href = 'student_log.html';
         });
     }
+    const uploadimage=document.getElementById("attendence-section")
 });
+function setupAttendenceModule(){
+    const classrominput=document.getElementByID("classroomImage");
+}

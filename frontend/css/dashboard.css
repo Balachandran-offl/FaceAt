@@ -6,6 +6,10 @@
     --danger-red: #e74a3b;
     --white: #ffffff;
     --border-soft: #eaecf4;
+    --text-dark: #2f3542;
+    --soft-blue: #f0f3ff;
+    --soft-green: #eafaf3;
+    --soft-red: #fff1ef;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,6 +29,12 @@ body {
     padding: 1.5rem 1rem;
     position: fixed;
     z-index: 100;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 2rem;
+    width: calc(100% - 2rem);
 }
 
 .brand {
@@ -51,7 +61,7 @@ body {
 }
 
 .nav-item.active {
-    background-color: #f0f3ff;
+    background-color: var(--soft-blue);
     color: var(--primary-blue);
 }
 
@@ -72,6 +82,31 @@ body {
     font-weight: 700;
     color: #4e4e4e;
     margin-bottom: 1.5rem;
+}
+
+.section-heading {
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #4e4e4e;
+}
+
+.section-copy {
+    color: #858796;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-top: 0.45rem;
+}
+
+.dashboard-section {
+    display: block;
+}
+
+.section-hidden {
+    display: none;
 }
 
 /* Stats Row */
@@ -113,6 +148,38 @@ body {
     box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
 }
 
+.attendance-card {
+    margin-bottom: 2.5rem;
+}
+
+.attendance-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.attendance-badge {
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    border: 1px solid #d9e3ff;
+    border-radius: 999px;
+    padding: 0.6rem 1rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}
+
+.attendance-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: stretch;
+}
+
 .upload-box {
     border: 2px dashed #d1d3e2;
     padding: 2.5rem;
@@ -120,6 +187,276 @@ body {
     border-radius: 12px;
     margin: 1.5rem 0;
     background: #fcfcfd;
+}
+
+.attendance-upload-box {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100%;
+}
+
+.upload-illustration {
+    width: 78px;
+    height: 78px;
+    margin: 0 auto 1rem;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #eaf1ff, #f7faff);
+    color: var(--primary-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.9rem;
+}
+
+.upload-title {
+    color: #4e4e4e;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.upload-copy {
+    color: #858796;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+}
+
+.attendance-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.file-pill {
+    margin: 1rem auto 0;
+    padding: 0.8rem 1rem;
+    width: min(100%, 280px);
+    background: var(--white);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    color: var(--sidebar-text);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.upload-hint {
+    font-size: 0.82rem;
+    color: #858796;
+    margin-top: 0.85rem;
+}
+
+.attendance-preview-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.preview-frame {
+    min-height: 360px;
+    background: linear-gradient(180deg, #f9fbff 0%, #f4f6fb 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.classroom-preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+.preview-placeholder {
+    padding: 2rem;
+    text-align: center;
+    color: #858796;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.preview-placeholder i {
+    font-size: 2.4rem;
+    color: #b3bfd9;
+}
+
+.preview-placeholder span {
+    max-width: 260px;
+    line-height: 1.6;
+}
+
+.preview-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.process-btn {
+    width: fit-content;
+}
+
+.preview-note {
+    color: #858796;
+    font-size: 0.87rem;
+    line-height: 1.5;
+}
+
+.attendance-results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+    margin-bottom: 1.25rem;
+}
+
+.results-title {
+    font-size: 1.15rem;
+    color: #4e4e4e;
+    margin-bottom: 0.35rem;
+}
+
+.results-copy {
+    color: #858796;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.result-toggle-group {
+    display: inline-flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.result-toggle-btn {
+    background: var(--white);
+    color: var(--sidebar-text);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    padding: 0.75rem 1.15rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.result-toggle-btn.active,
+.result-toggle-btn:hover {
+    color: var(--primary-blue);
+    border-color: #cfdcff;
+    background: var(--soft-blue);
+}
+
+.attendance-results-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.attendance-column {
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    padding: 1.3rem;
+    background: #fcfdff;
+}
+
+.present-column {
+    background: linear-gradient(180deg, #fcfffd 0%, #f4fbf7 100%);
+}
+
+.absent-column {
+    background: linear-gradient(180deg, #fffdfd 0%, #fff6f5 100%);
+}
+
+.attendance-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.attendance-column h4 {
+    font-size: 1.05rem;
+    color: #4e4e4e;
+}
+
+.column-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+}
+
+.present-column .column-eyebrow {
+    color: var(--success-green);
+}
+
+.absent-column .column-eyebrow {
+    color: var(--danger-red);
+}
+
+.result-count {
+    min-width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    background: var(--white);
+    color: var(--text-dark);
+    border: 1px solid var(--border-soft);
+}
+
+.attendance-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    min-height: 110px;
+    align-content: flex-start;
+}
+
+.student-pill {
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+.present-column .student-pill {
+    background: var(--soft-green);
+    color: #138a5b;
+    border-color: #c9efd9;
+}
+
+.absent-column .student-pill {
+    background: var(--soft-red);
+    color: #d65347;
+    border-color: #f4d1cc;
+}
+
+.placeholder-pill {
+    width: 100%;
+    color: #858796;
+    background: #f8f9fc;
+    border-color: var(--border-soft);
+}
+
+.student-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
 }
 
 .btn-upload {
@@ -141,4 +478,69 @@ body {
     margin-top: 1rem;
     font-weight: 700;
     font-size: 0.9rem;
+}
+
+@media (max-width: 1080px) {
+    .attendance-layout,
+    .attendance-results-grid,
+    .stats-container {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .stats-container {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 860px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+    }
+
+    .sidebar-footer {
+        position: static;
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 1.4rem;
+    }
+
+    .attendance-card-header,
+    .attendance-results-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .process-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 560px) {
+    .action-card {
+        padding: 1.25rem;
+    }
+
+    .upload-box {
+        padding: 1.5rem;
+    }
+
+    .preview-frame {
+        min-height: 240px;
+    }
+
+    .header-title {
+        font-size: 1.5rem;
+    }
 }

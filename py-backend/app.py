@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from rout import vision
 import uvicorn
+import sys
+print("Python executable used by Spark:", sys.executable)
 app=FastAPI(title="Retina")
 app.include_router(vision.router)
 @app.get("/")

@@ -41,7 +41,7 @@ document.getElementById("studentRegForm").addEventListener("submit", async funct
 
         if (response.ok) {
             alert("Registration Successful!");
-            window.location.href = "face_capture.html"; // Move to face scan
+            window.location.href = "student_dash.html";
         } else {
             // Show error from backend (like "User already exists")
             alert("Error: " + (result.message || "Unknown error occurred"));
