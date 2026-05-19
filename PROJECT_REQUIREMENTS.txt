@@ -1,0 +1,111 @@
+ATS Project Requirements
+========================
+
+1. Application Overview
+- Frontend: static HTML, CSS, and JavaScript files served by the Node.js server.
+- Node.js backend: Express API for authentication, image upload, GridFS access, approval flow,
+  and attendance processing requests.
+- Python backend: FastAPI service for image quality scoring, face embedding generation,
+  and classroom attendance matching.
+- Database: MongoDB Atlas with GridFS bucket for student images and a collection for embeddings.
+
+2. Node.js Requirements
+- Node.js runtime
+- npm package manager
+
+Node dependencies from package.json:
+- axios ^1.13.6
+- bcryptjs ^3.0.3
+- cors ^2.8.6
+- dotenv ^17.3.1
+- express ^5.2.1
+- jsonwebtoken ^9.0.3
+- mongoose ^9.3.0
+- multer ^2.1.1
+
+Install command:
+- npm install
+
+Start command:
+- npm start
+
+3. Python Requirements
+- Python 3.x
+- Recommended: use the virtual environment inside py-backend/venv
+
+Python packages required by the current code:
+- fastapi
+- uvicorn
+- pymongo
+- numpy
+- opencv-python
+- retinaface
+- insightface
+- faiss-cpu
+- onnxruntime
+- python-multipart
+
+Optional / auxiliary Python packages:
+- pyspark          (only needed for py-backend/spark.py)
+- gdown
+- Pillow
+- tensorflow
+
+Current local note:
+- The checked-in local file py-backend/venv/requirements.txt currently contains:
+  - numpy>=1.14.0
+  - gdown>=3.10.1
+  - Pillow>=5.2.0
+  - opencv-python>=3.4.4
+  - tensorflow>=1.9.0
+- That list is not enough by itself for the current codebase, because the active Python app
+  also imports FastAPI, PyMongo, RetinaFace, InsightFace, FAISS, ONNX Runtime, and multipart upload support.
+
+4. Environment Variables
+- JWT_SECRET
+- MONGO_URI
+- PORT
+- PYTHON_SERVICE_URL
+
+Current usage:
+- PORT defaults to 5000 in server.js if not provided.
+- PYTHON_SERVICE_URL defaults to http://localhost:8000 in the Node.js routes if not provided.
+
+5. Default Ports
+- Node.js / Express server: 5000
+- Python / FastAPI vision server: 8000
+
+6. Database Requirements
+- MongoDB Atlas or MongoDB server accessible through MONGO_URI
+- GridFS bucket name: studentImages
+- Main image metadata collection: studentImages.files
+- Embedding collection: studentEmbeddings
+
+7. Main Runtime Files
+- Node entry point: server.js
+- Python entry point: py-backend/app.py
+- Vision logic: py-backend/rout/vision.py
+
+8. Deployment Startup Sequence
+1. Install Node.js dependencies with npm install.
+2. Ensure MongoDB credentials are configured in .env.
+3. Ensure Python dependencies are installed in the Python environment used for deployment.
+4. Start the Python FastAPI service on port 8000.
+5. Start the Node.js server on port 5000.
+6. Open the frontend through the Node.js server, not directly from the filesystem.
+
+9. Recommended Windows Startup Commands
+- Node:
+  - npm install
+  - npm start
+
+- Python:
+  - cd py-backend
+  - .\venv\Scripts\activate
+  - python app.py
+
+10. Important Deployment Notes
+- The frontend now uses same-origin /api/... requests, so it should be served through server.js.
+- The Python service must be reachable from the Node.js server through PYTHON_SERVICE_URL.
+- If deployment uses a different host or port for Python, set PYTHON_SERVICE_URL accordingly.
+- Do not commit production secrets from .env into shared repositories or deployment documents.

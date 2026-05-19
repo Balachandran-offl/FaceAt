@@ -1,36 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
     setupDashboardNavigation();
+    setupLogout();
+    setupVerificationModule();
     setupAttendanceModule();
-    fetchPendingImages();
-    updateApprovedCount();
 });
+
+const decisionLocks = new Set();
+let currentVerificationView = 'pending';
 
 function setupDashboardNavigation() {
     const attendanceNav = document.getElementById('btn-attendance-nav');
     const verifyNav = document.getElementById('btn-verify-nav');
-    const studentListNav = document.getElementById('btn-student-list-nav');
     const attendanceSection = document.getElementById('attendance-section');
     const verificationSection = document.getElementById('verification-section');
     const headerTitle = document.querySelector('.header-title');
-    const navItems = [attendanceNav, verifyNav, studentListNav].filter(Boolean);
+    const navItems = [attendanceNav, verifyNav].filter(Boolean);
 
     function setActiveNav(activeItem) {
         navItems.forEach(item => item.classList.remove('active'));
         if (activeItem) activeItem.classList.add('active');
     }
 
-    function showAttendanceSection(activeItem = attendanceNav, scrollToResults = false) {
+    function showAttendanceSection(activeItem = attendanceNav) {
         if (attendanceSection) attendanceSection.classList.remove('section-hidden');
         if (verificationSection) verificationSection.classList.add('section-hidden');
         if (headerTitle) headerTitle.innerText = 'Take Attendance';
         setActiveNav(activeItem);
-
-        if (scrollToResults) {
-            const resultsSection = document.getElementById('attendance-results');
-            if (resultsSection) {
-                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
     }
 
     function showVerificationSection() {
@@ -54,98 +49,261 @@ function setupDashboardNavigation() {
         });
     }
 
-    if (studentListNav) {
-        studentListNav.addEventListener('click', (event) => {
-            event.preventDefault();
-            showAttendanceSection(studentListNav, true);
-        });
-    }
-
     showAttendanceSection(attendanceNav);
 }
 
-async function updateApprovedCount() {
-    const approvedDisplay = document.getElementById('approved-count'); // Make sure this ID exists in HTML
-    try {
-        const response = await fetch('http://localhost:5000/api/staff/approved-stats');
-        const data = await response.json();
-        
-        if (approvedDisplay) {
-            approvedDisplay.innerText = data.count;
-        }
-    } catch (error) {
-        console.error("Error fetching approved count:", error);
+function setupVerificationModule() {
+    const pendingQueueBtn = document.getElementById('pendingQueueBtn');
+    const approvedQueueBtn = document.getElementById('approvedQueueBtn');
+
+    if (!pendingQueueBtn || !approvedQueueBtn) return;
+
+    pendingQueueBtn.addEventListener('click', () => {
+        if (currentVerificationView === 'pending') return;
+        currentVerificationView = 'pending';
+        updateVerificationViewButtons();
+        updateVerificationQueueMessage();
+        refreshVerificationSection();
+    });
+
+    approvedQueueBtn.addEventListener('click', () => {
+        if (currentVerificationView === 'approved') return;
+        currentVerificationView = 'approved';
+        updateVerificationViewButtons();
+        updateVerificationQueueMessage();
+        refreshVerificationSection();
+    });
+
+    updateVerificationViewButtons();
+    updateVerificationQueueMessage();
+    refreshVerificationSection();
+}
+
+function updateVerificationViewButtons() {
+    const pendingQueueBtn = document.getElementById('pendingQueueBtn');
+    const approvedQueueBtn = document.getElementById('approvedQueueBtn');
+
+    if (pendingQueueBtn) {
+        pendingQueueBtn.classList.toggle(
+            'active',
+            currentVerificationView === 'pending'
+        );
+    }
+
+    if (approvedQueueBtn) {
+        approvedQueueBtn.classList.toggle(
+            'active',
+            currentVerificationView === 'approved'
+        );
     }
 }
-async function fetchPendingImages() {
+
+function updateVerificationQueueMessage() {
+    const queueMessage = document.getElementById('verificationQueueMessage');
+    if (!queueMessage) return;
+
+    queueMessage.innerText = currentVerificationView === 'pending'
+        ? 'Review the following student profile photos. These have passed RetinaFace quality checks.'
+        : 'View the approved student profile photos along with their roll numbers.';
+}
+
+async function fetchVerificationImages(view) {
+    const endpoint = view === 'approved'
+        ? '/api/staff/approved-verification'
+        : '/api/staff/pending-verification';
+
+    const response = await fetch(endpoint);
+    if (!response.ok) {
+        throw new Error(`Unable to fetch ${view} verification images.`);
+    }
+
+    return response.json();
+}
+
+async function refreshVerificationSection() {
     const gridContainer = document.getElementById('student-image-grid');
     const pendingCount = document.getElementById('pending-count');
-    
+    const approvedCount = document.getElementById('approved-count');
+
+    if (!gridContainer) return;
+
     try {
-        const response = await fetch('http://localhost:5000/api/staff/pending-verification');
-        const students = await response.json();
-        
-        pendingCount.innerText = students.length;
-        
+        const [pendingStudents, approvedStudents] = await Promise.all([
+            fetchVerificationImages('pending'),
+            fetchVerificationImages('approved')
+        ]);
+
+        if (pendingCount) {
+            pendingCount.innerText = pendingStudents.length;
+        }
+
+        if (approvedCount) {
+            approvedCount.innerText = approvedStudents.length;
+        }
+
+        const students = currentVerificationView === 'approved'
+            ? approvedStudents
+            : pendingStudents;
+
         if (students.length === 0) {
-            gridContainer.innerHTML = '<p style="text-align:center; width:100%; padding:20px;">No images pending verification.</p>';
+            gridContainer.innerHTML = `
+                <p class="verification-meta" style="text-align:center; width:100%; padding:20px;">
+                    ${currentVerificationView === 'approved'
+                        ? 'No approved images are available yet.'
+                        : 'No images are pending verification.'}
+                </p>`;
             return;
         }
-        
+
         gridContainer.innerHTML = '';
         students.forEach(student => {
-            const card = createStudentCard(student);
+            const card = createStudentCard(student, currentVerificationView);
             gridContainer.appendChild(card);
         });
     } catch (error) {
-        console.error("Error fetching students:", error);
+        console.error('Error fetching students:', error);
+        gridContainer.innerHTML = `
+            <p class="verification-meta" style="text-align:center; width:100%; padding:20px;">
+                Unable to load verification images right now.
+            </p>`;
     }
 }
 
-function createStudentCard(student) {
+function createStudentCard(student, view = 'pending') {
     const card = document.createElement('div');
-    card.style.cssText = "background: var(--bg-body); padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); text-align: center;";
-    
-    // Fix: String.fromCharCode (added 'h')
+    card.className = 'verification-card';
+    card.dataset.rollNumber = student.rollNumber;
+
     const base64String = btoa(new Uint8Array(student.image.data.data).reduce((data, byte) => data + String.fromCharCode(byte), ''));
     const imgSrc = `data:${student.image.contentType};base64,${base64String}`;
-    
+    const isProcessing = Boolean(student.processingAccept);
+    const qualityScore = Number(student.qualityScore || 0);
+
+    if (view === 'approved') {
+        card.innerHTML = `
+            <div class="verification-image-frame">
+                <img src="${imgSrc}" alt="Approved image for ${student.rollNumber}" class="verification-image">
+            </div>
+            <h4>Roll No: ${student.rollNumber}</h4>`;
+
+        return card;
+    }
+
     card.innerHTML = `
-        <img src="${imgSrc}" style="width: 100%; border-radius: 8px; margin-bottom: 10px; height: 180px; object-fit: cover; object-position: top;">
-        <h4 style="color: #4e4e4e; margin-bottom: 5px;">Roll No: ${student.rollNumber}</h4>
-        <p style="font-size: 0.8rem; font-weight: 800; color: var(--primary-blue); margin-bottom: 15px;">
-            Quality Score: ${Math.round(student.qualityScore * 100)}%
+        <div class="verification-image-frame">
+            <img src="${imgSrc}" alt="Student image for ${student.rollNumber}" class="verification-image">
+        </div>
+        <h4>Roll No: ${student.rollNumber}</h4>
+        <p class="verification-score">
+            Quality Score: ${Math.round(qualityScore * 100)}%
         </p>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-upload" style="flex: 1; background: var(--success-green); padding: 8px;" 
-                onclick="processDecision('${student.rollNumber}', 'accept')">Accept</button>
-            <button class="btn-upload" style="flex: 1; background: var(--danger-red); padding: 8px;" 
-                onclick="processDecision('${student.rollNumber}', 'reject')">Reject</button>
-        </div>`;
+        <div class="decision-actions">
+            <button type="button" class="btn-upload decision-btn accept-btn" data-action="accept">Accept</button>
+            <button type="button" class="btn-upload decision-btn reject-btn" data-action="reject">Reject</button>
+        </div>
+        <p class="decision-status" ${isProcessing ? '' : 'hidden'}>
+            Embedding generation is in progress. Please wait.
+        </p>`;
+
+    const actionButtons = card.querySelectorAll('.decision-btn');
+    actionButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            processDecision(student.rollNumber, button.dataset.action, button);
+        });
+    });
+
+    if (isProcessing) {
+        setDecisionCardState(card, true, 'accept', 'Embedding generation is in progress. Please wait.');
+    }
+
     return card;
 }
 
-// Moved outside so the 'onclick' in the HTML can find it
-async function processDecision(rollNumber, action) {
+function setDecisionCardState(card, isProcessing, action, message = '') {
+    if (!card) return;
+
+    card.dataset.processing = String(isProcessing);
+
+    const acceptButton = card.querySelector('[data-action="accept"]');
+    const rejectButton = card.querySelector('[data-action="reject"]');
+    const status = card.querySelector('.decision-status');
+
+    if (acceptButton) {
+        acceptButton.disabled = isProcessing;
+        acceptButton.innerText = isProcessing && action === 'accept'
+            ? 'Generating...'
+            : 'Accept';
+    }
+
+    if (rejectButton) {
+        rejectButton.disabled = isProcessing;
+        rejectButton.innerText = isProcessing && action === 'reject'
+            ? 'Rejecting...'
+            : 'Reject';
+    }
+
+    if (status) {
+        status.hidden = !message;
+        status.innerText = message;
+    }
+}
+
+async function processDecision(rollNumber, action, triggerButton) {
+    const card = triggerButton?.closest('.verification-card');
+
+    if (decisionLocks.has(rollNumber) || card?.dataset.processing === 'true') {
+        return;
+    }
+
     if (!confirm(`Are you sure you want to ${action} this image?`)) return;
+
+    decisionLocks.add(rollNumber);
+    setDecisionCardState(
+        card,
+        true,
+        action,
+        action === 'accept'
+            ? 'Embedding generation is in progress. Please wait.'
+            : 'Rejecting image. Please wait.'
+    );
+
     try {
-        const response = await fetch('http://localhost:5000/api/staff/verify-decision', { // Ensure this endpoint matches your backend
+        const response = await fetch('/api/staff/verify-decision', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }, // Fix: headers (plural)
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ rollNumber, action })
         });
-        
-        const result = await response.json();
-        if (result.success) {
-            alert(`Student ${rollNumber} has been ${action}ed.`);
-            fetchPendingImages(); 
-            updateApprovedCount();// Refresh the grid
-        } else {
-            alert("Error: " + result.message);
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok || !result.success) {
+            if (response.status === 409) {
+                await refreshVerificationSection();
+            }
+
+            throw new Error(result.message || `Unable to ${action} this image.`);
         }
+
+        alert(result.message || `Student ${rollNumber} has been ${action}ed.`);
+        await refreshVerificationSection();
     } catch (error) {
         console.error("Verification error:", error);
+        alert(error.message || 'Verification request failed.');
+        setDecisionCardState(card, false, action);
+    } finally {
+        decisionLocks.delete(rollNumber);
     }
+}
+
+function setupLogout() {
+    const staffLogoutBtn = document.getElementById('staffLogoutBtn');
+    if (!staffLogoutBtn) return;
+
+    staffLogoutBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        localStorage.clear();
+        window.location.href = 'staff_log.html';
+    });
 }
 
 function setupAttendanceModule() {
@@ -321,7 +479,7 @@ function setupAttendanceModule() {
 }
 
 async function sendAttendanceRequest(file) {
-    const attendanceApiUrl = 'http://localhost:5000/api/staff/process-attendance';
+    const attendanceApiUrl = '/api/staff/process-attendance';
     const formData = new FormData();
     formData.append('classroomImage', file);
 

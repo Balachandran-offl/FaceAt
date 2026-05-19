@@ -13,8 +13,145 @@ const FormData = require("form-data");
 const multer = require("multer");
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "http://localhost:8000";
 
 const router = express.Router();
+
+function escapeRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+async function clearAcceptProcessingState(filesCollection, fileId) {
+    await filesCollection.updateOne(
+        { _id: fileId },
+        {
+            $unset: {
+                "metadata.processingAccept": "",
+                "metadata.processingStartedAt": ""
+            }
+        }
+    );
+}
+
+function getRollNumberFromFile(file) {
+    return (
+        file?.metadata?.rollNumber ||
+        String(file?.metadata?.email || "").split("@")[0]
+    );
+}
+
+function mapGridFsFileToStudent(file, buffer) {
+    return {
+        rollNumber:
+            getRollNumberFromFile(file),
+        email:
+            file.metadata?.email || "",
+        filename:
+            file.filename || "",
+        contentType:
+            file.contentType ||
+            "image/jpeg",
+        qualityScore:
+            file.metadata?.qualityScore ??
+            file.metadata?.qualityscore ??
+            0,
+        verifiedAt:
+            file.metadata?.verifiedAt ||
+            null,
+        uploadedAt:
+            file.metadata?.uploadedAt ||
+            file.uploadDate ||
+            null,
+        processingAccept:
+            Boolean(
+                file.metadata?.processingAccept
+            ),
+        image: {
+            data: buffer,
+            contentType:
+                file.contentType ||
+                "image/jpeg"
+        }
+    };
+}
+
+async function fetchStudentImagesByVerification(
+    bucket,
+    verified
+) {
+    const files = await bucket.find({
+        "metadata.verified": verified
+    }).toArray();
+
+    if (!files || files.length === 0) {
+        return [];
+    }
+
+    files.sort((left, right) => {
+        const leftDate = new Date(
+            left.metadata?.verifiedAt ||
+            left.metadata?.uploadedAt ||
+            left.uploadDate ||
+            0
+        );
+        const rightDate = new Date(
+            right.metadata?.verifiedAt ||
+            right.metadata?.uploadedAt ||
+            right.uploadDate ||
+            0
+        );
+
+        return rightDate - leftDate;
+    });
+
+    const studentData = await Promise.all(
+        files.map(async (file) => {
+            return new Promise((resolve) => {
+                const chunks = [];
+                const downloadStream =
+                    bucket.openDownloadStream(
+                        file._id
+                    );
+
+                downloadStream.on(
+                    "data",
+                    (chunk) => {
+                        chunks.push(chunk);
+                    }
+                );
+
+                downloadStream.on(
+                    "end",
+                    () => {
+                        resolve(
+                            mapGridFsFileToStudent(
+                                file,
+                                Buffer.concat(
+                                    chunks
+                                )
+                            )
+                        );
+                    }
+                );
+
+                downloadStream.on(
+                    "error",
+                    (err) => {
+                        console.error(
+                            "Stream Error:",
+                            err
+                        );
+                        resolve(null);
+                    }
+                );
+            });
+        })
+    );
+
+    return studentData.filter(
+        (item) => item !== null
+    );
+}
 
 
 // =========================================
@@ -69,11 +206,8 @@ router.post(
             // Send image to FastAPI
             const fastapiresponse =
                 await axios.post(
-
-                    "http://127.0.0.1:8000/process-attendance",
-
+                    `${PYTHON_SERVICE_URL}/process-attendance`,
                     formdata,
-
                     {
                         headers:
                             formdata.getHeaders()
@@ -231,101 +365,13 @@ router.get(
         try {
 
             const bucket = getBucket();
-
-            const files = await bucket.find({
-
-                "metadata.verified": false
-
-            }).toArray();
-
-            if (!files || files.length === 0) {
-
-                return res.status(200).json([]);
-            }
-
             const studentData =
-                await Promise.all(
-
-                    files.map(async (file) => {
-
-                        return new Promise((resolve) => {
-
-                            const chunks = [];
-
-                            const downloadStream =
-                                bucket.openDownloadStream(
-                                    file._id
-                                );
-
-                            // Read GridFS chunks
-                            downloadStream.on(
-                                'data',
-                                (chunk) => {
-
-                                    chunks.push(chunk);
-                                }
-                            );
-
-                            // After full image downloaded
-                            downloadStream.on(
-                                'end',
-                                () => {
-
-                                    const buffer =
-                                        Buffer.concat(chunks);
-
-                                    const email =
-                                        file.metadata.email || "";
-
-                                    const extractedRollNumber =
-                                        email.split('@')[0];
-
-                                    resolve({
-
-                                        rollNumber:
-                                            extractedRollNumber,
-
-                                        email: email,
-
-                                        qualityScore:
-                                            file.metadata.qualityScore ??
-                                            file.metadata.qualityscore,
-
-                                        image: {
-
-                                            data: buffer,
-
-                                            contentType:
-                                                file.contentType ||
-                                                "image/jpeg"
-                                        }
-                                    });
-                                }
-                            );
-
-                            // Stream error
-                            downloadStream.on(
-                                'error',
-                                (err) => {
-
-                                    console.error(
-                                        "Stream Error:",
-                                        err
-                                    );
-
-                                    resolve(null);
-                                }
-                            );
-                        });
-                    })
+                await fetchStudentImagesByVerification(
+                    bucket,
+                    false
                 );
 
-            return res.json(
-
-                studentData.filter(
-                    item => item !== null
-                )
-            );
+            return res.json(studentData);
         }
         catch (error) {
 
@@ -339,6 +385,41 @@ router.get(
             return res.status(500).json({
 
                 message: "GridFS Fetch Error"
+            });
+        }
+    }
+);
+
+router.get(
+
+    '/approved-verification',
+
+    async (req, res) => {
+
+        try {
+
+            const bucket = getBucket();
+            const studentData =
+                await fetchStudentImagesByVerification(
+                    bucket,
+                    true
+                );
+
+            return res.json(studentData);
+        }
+        catch (error) {
+
+            console.error(
+
+                "Approved GridFS Fetch Error:",
+
+                error
+            );
+
+            return res.status(500).json({
+
+                message:
+                    "Approved GridFS Fetch Error"
             });
         }
     }
@@ -362,10 +443,37 @@ router.post(
 
         try {
 
+            if (
+                !rollNumber ||
+                !['accept', 'reject'].includes(action)
+            ) {
+
+                return res.status(400).json({
+
+                    success: false,
+
+                    message:
+                        "Invalid verification request"
+                });
+            }
+
+            const db =
+                mongoose.connection.db;
+
+            const filesCollection =
+                db.collection(
+                    "studentImages.files"
+                );
+
+            const embeddingsCollection =
+                db.collection(
+                    "studentEmbeddings"
+                );
+
             // Match email starting with roll number
             const emailPattern =
                 new RegExp(
-                    `^${rollNumber}@`,
+                    `^${escapeRegex(rollNumber)}@`,
                     'i'
                 );
 
@@ -393,8 +501,63 @@ router.post(
 
             if (action === 'accept') {
 
-                const db =
-                    mongoose.connection.db;
+                if (file.metadata?.verified) {
+
+                    return res.status(409).json({
+
+                        success: false,
+
+                        message:
+                            "This image has already been approved."
+                    });
+                }
+
+                const claimResult =
+                    await filesCollection.updateOne(
+
+                        {
+                            _id: file._id,
+                            "metadata.verified":
+                                false,
+                            "metadata.processingAccept":
+                                { $ne: true }
+                        },
+
+                        {
+                            $set: {
+                                "metadata.processingAccept":
+                                    true,
+                                "metadata.processingStartedAt":
+                                    new Date()
+                            }
+                        }
+                    );
+
+                if (
+                    claimResult.modifiedCount === 0
+                ) {
+
+                    const latestFile =
+                        await filesCollection.findOne(
+                            { _id: file._id },
+                            {
+                                projection: {
+                                    metadata: 1
+                                }
+                            }
+                        );
+
+                    return res.status(409).json({
+
+                        success: false,
+
+                        message:
+                            latestFile?.metadata
+                                ?.verified
+                                ? "This image has already been approved."
+                                : "Embedding generation is already in progress for this image."
+                    });
+                }
 
                 const chunks = [];
 
@@ -420,6 +583,15 @@ router.post(
                     async () => {
 
                         try {
+
+                            const approvalTimestamp =
+                                new Date();
+                            const email =
+                                file.metadata.email;
+                            const rollNumberValue =
+                                getRollNumberFromFile(
+                                    file
+                                );
 
                             // Combine chunks
                             const buffer =
@@ -449,7 +621,7 @@ router.post(
                             const response =
                                 await axios.post(
 
-                                    "http://localhost:8000/generate-embedding",
+                                    `${PYTHON_SERVICE_URL}/generate-embedding`,
 
                                     form,
 
@@ -464,6 +636,11 @@ router.post(
                                 !response.data.success
                             ) {
 
+                                await clearAcceptProcessingState(
+                                    filesCollection,
+                                    file._id
+                                );
+
                                 return res.status(400).json({
 
                                     success: false,
@@ -477,31 +654,118 @@ router.post(
                             const embedding =
                                 response.data.embedding;
 
+                            const existingEmbeddings =
+                                await embeddingsCollection
+                                    .find({
+                                        email: email
+                                    })
+                                    .sort({
+                                        createdAt: 1,
+                                        _id: 1
+                                    })
+                                    .toArray();
+
+                            const primaryEmbedding =
+                                existingEmbeddings[0] ||
+                                null;
+
+                            if (
+                                existingEmbeddings.length > 1
+                            ) {
+
+                                await embeddingsCollection
+                                    .deleteMany({
+                                        _id: {
+                                            $in:
+                                                existingEmbeddings
+                                                    .slice(1)
+                                                    .map(
+                                                        (document) => document._id
+                                                    )
+                                        }
+                                    });
+                            }
+
+                            const createdAt =
+                                primaryEmbedding
+                                    ?.createdAt ||
+                                approvalTimestamp;
+
                             // Store embedding
-                            await db
-                                .collection(
-                                    "studentEmbeddings"
-                                )
-                                .insertOne({
+                            await embeddingsCollection
+                                .updateOne(
 
-                                    rollNo:
-                                        rollNumber,
+                                    primaryEmbedding
+                                        ? {
+                                            _id:
+                                                primaryEmbedding._id
+                                        }
+                                        : {
+                                            email: email
+                                        },
 
-                                    email:
-                                        file.metadata.email,
+                                    {
+                                        $set: {
 
-                                    embedding:
-                                        embedding,
+                                            email:
+                                                email,
 
-                                    gridfsFileId:
-                                        file._id
-                                });
+                                            rollNumber:
+                                                rollNumberValue,
+
+                                            contentType:
+                                                file.contentType ||
+                                                "image/jpeg",
+
+                                            filename:
+                                                file.filename ||
+                                                "student.jpg",
+
+                                            imageFileId:
+                                                file._id,
+
+                                            gridfsFileId:
+                                                file._id,
+
+                                            qualityScore:
+                                                file.metadata
+                                                    ?.qualityScore ??
+                                                file.metadata
+                                                    ?.qualityscore ??
+                                                null,
+
+                                            embedding:
+                                                embedding,
+
+                                            embeddingLength:
+                                                Array.isArray(
+                                                    embedding
+                                                )
+                                                    ? embedding.length
+                                                    : 0,
+
+                                            createdAt:
+                                                createdAt,
+
+                                            verifiedAt:
+                                                approvalTimestamp,
+
+                                            updatedAt:
+                                                approvalTimestamp
+                                        },
+                                        $unset: {
+                                            rollNo: ""
+                                        }
+                                    },
+
+                                    {
+                                        upsert:
+                                            !primaryEmbedding
+                                    }
+                                );
 
                             // Mark verified
-                            await db
-                                .collection(
-                                    "studentImages.files"
-                                )
+                            await filesCollection
                                 .updateOne(
 
                                     {
@@ -512,7 +776,15 @@ router.post(
                                     {
                                         $set: {
                                             "metadata.verified":
-                                                true
+                                                true,
+                                            "metadata.verifiedAt":
+                                                approvalTimestamp
+                                        },
+                                        $unset: {
+                                            "metadata.processingAccept":
+                                                "",
+                                            "metadata.processingStartedAt":
+                                                ""
                                         }
                                     }
                                 );
@@ -534,6 +806,11 @@ router.post(
                                 err
                             );
 
+                            await clearAcceptProcessingState(
+                                filesCollection,
+                                file._id
+                            );
+
                             return res.status(500).json({
 
                                 success: false,
@@ -550,13 +827,18 @@ router.post(
 
                     'error',
 
-                    (err) => {
+                    async (err) => {
 
                         console.error(
 
                             "GridFS Download Error:",
 
                             err
+                        );
+
+                        await clearAcceptProcessingState(
+                            filesCollection,
+                            file._id
                         );
 
                         return res.status(500).json({
@@ -576,6 +858,17 @@ router.post(
             // =========================================
 
             if (action === 'reject') {
+
+                if (file.metadata?.processingAccept) {
+
+                    return res.status(409).json({
+
+                        success: false,
+
+                        message:
+                            "This image is already being approved. Please wait for embedding generation to finish."
+                    });
+                }
 
                 await bucket.delete(file._id);
 

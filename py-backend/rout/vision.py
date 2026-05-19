@@ -64,17 +64,29 @@ def normalize(vec):
 def build_faiss_index():
     global faiss_index, student_roll_map
 
+    faiss_index = faiss.IndexFlatIP(EMBEDDING_DIM)
     students = list(embedding_collection.find({}))
 
     vectors = []
     student_roll_map = []
 
     for student in students:
-        emb = np.array(student["embedding"], dtype=np.float32)
+        roll_number = (
+            student.get("rollNumber")
+            or student.get("rollNo")
+        )
+        embedding_values = student.get("embedding")
+
+        if not roll_number or not embedding_values:
+            continue
+
+        emb = np.array(embedding_values, dtype=np.float32)
+        if emb.shape[0] != EMBEDDING_DIM:
+            continue
         emb = normalize(emb)
 
         vectors.append(emb)
-        student_roll_map.append(student["rollNumber"])
+        student_roll_map.append(roll_number)
 
     if len(vectors) == 0:
         return
@@ -94,6 +106,7 @@ build_faiss_index()
 async def process_attendance(file: UploadFile = File(...)):
     try:
         model = get_face_model()
+        build_faiss_index()
 
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)

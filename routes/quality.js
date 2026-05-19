@@ -8,8 +8,6 @@ const FormData = require('form-data');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const jwt = require('jsonwebtoken');
-const mongoose = require("mongoose");
-const EMBEDDINGS_COLLECTION = process.env.EMBEDDINGS_COLLECTION || "studentEmbeddings";
 const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "http://localhost:8000";
 
 router.post('/verify-quality', upload.single('profileImage'), async (req, res) => {
@@ -26,6 +24,7 @@ router.post('/verify-quality', upload.single('profileImage'), async (req, res) =
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         const email = decoded.email;
+        const rollNumber = email.split("@")[0];
         const form = new FormData();
         form.append('file', req.file.buffer, {
             filename: req.file.originalname,
@@ -40,7 +39,6 @@ router.post('/verify-quality', upload.single('profileImage'), async (req, res) =
         if (score >= 0.8) {
 
             const bucket = getBucket();
-            const db = mongoose.connection.db;
 
             // Replace any existing image for this student before saving the new one
             const existingFiles = await bucket.find({ "metadata.email": email }).toArray();
@@ -48,15 +46,13 @@ router.post('/verify-quality', upload.single('profileImage'), async (req, res) =
                 await bucket.delete(file._id);
             }
 
-            // Remove any older embedding so only staff-approved images can recreate it.
-            await db.collection(EMBEDDINGS_COLLECTION).deleteMany({ email });
-
             const uploadStream = bucket.openUploadStream(req.file.originalname, {
                 metadata: {
                     email,
+                    rollNumber,
                     verified: false,
                     uploadedAt: new Date(),
-                    qualityScore:score
+                    qualityScore: score
                 },
                 contentType: req.file.mimetype
             });

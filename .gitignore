@@ -1,6 +1,4 @@
-py-backend/venv/
-venu/
 node_modules/
+py-backend/venv/
 .env
 __pycache__/
-*.pyc

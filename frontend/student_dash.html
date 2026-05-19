@@ -13,12 +13,13 @@
         <div class="brand">ATS System</div>
         <nav>
             <a href="#" class="nav-item active">Dashboard</a>
-            <a href="#" class="nav-item">Attendance History</a>
-            <a href="#" class="nav-item">Profile Settings</a>
-            <a href="student_log.html" id="logoutBtn" class="nav-item" style="color: var(--danger-red); margin-top: 50px;">
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="student_log.html" id="logoutBtn" class="nav-item" style="color: var(--danger-red);">
                 Logout
             </a>
-        </nav>
+        </div>
     </aside>
 
     <main class="main-content">
@@ -45,19 +46,19 @@
         <div class="action-card">
             <h3 style="color: #4e73df;">Student Identity Verification</h3>
             <p style="color: #858796; font-size: 0.9rem; margin-top: 5px;">
-                Please upload a formal photo. System strictly prohibits <strong>.txt, .ppt, or .pdf</strong> files.
+                Upload the formal photos.
             </p>
 
             <div class="upload-box">
                 <input type="file" id="studentPhoto" accept="image/png, image/jpeg" hidden>
                 
-                <div id="previewContainer" style="display: none; margin-bottom: 15px;">
-                    <img id="imagePreview" src="" alt="Profile Preview" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #4e73df;">
+                <div id="previewContainer" class="profile-preview-frame">
+                    <img id="imagePreview" src="" alt="Profile Preview" class="profile-preview-image">
                 </div>
 
-                <button type="button" id="uploadTriggerBtn" class="btn-upload">
+                <label for="studentPhoto" id="uploadTriggerBtn" class="btn-upload" role="button" tabindex="0">
                     Choose Photo
-                </button>
+                </label>
 
                 <div id="fileSelectedName" style="margin-top: 15px; color: #5a5c69; font-weight: 600;"></div>
                 

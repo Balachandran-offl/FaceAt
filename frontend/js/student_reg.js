@@ -29,7 +29,7 @@ document.getElementById("studentRegForm").addEventListener("submit", async funct
 
     try {
         // FIXED: headers (plural) and the object format
-        const response = await fetch("http://localhost:5000/api/register", {
+        const response = await fetch("/api/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -41,7 +41,7 @@ document.getElementById("studentRegForm").addEventListener("submit", async funct
 
         if (response.ok) {
             alert("Registration Successful!");
-            window.location.href = "student_dash.html";
+            window.location.href = "student_log.html";
         } else {
             // Show error from backend (like "User already exists")
             alert("Error: " + (result.message || "Unknown error occurred"));

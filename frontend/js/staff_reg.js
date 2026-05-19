@@ -31,7 +31,7 @@ document.getElementById("staffRegForm").addEventListener("submit", async functio
 
     // 4. Send to Backend
     try {
-        const response = await fetch("http://localhost:5000/api/register", {
+        const response = await fetch("/api/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -43,8 +43,7 @@ document.getElementById("staffRegForm").addEventListener("submit", async functio
 
         if (response.ok) {
             alert("Staff Registration Successful! Welcome aboard.");
-            // Staff usually go straight to a login or dashboard
-            window.location.href = "staff_dash.html"; 
+            window.location.href = "staff_log.html";
         } else {
             alert("Error: " + (result.message || "Registration failed"));
         }

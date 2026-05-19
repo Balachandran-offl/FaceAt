@@ -21,14 +21,9 @@
             <i class="fas fa-user-check" style="margin-right: 10px;"></i>
             Verify Image
         </a>
-        
-        <a href="#attendance-results" class="nav-item" id="btn-student-list-nav">
-            <i class="fas fa-list-alt" style="margin-right: 10px;"></i>
-            Student List
-        </a>
 
         <div class="sidebar-footer">
-            <a href="/logout" class="nav-item" style="color: var(--danger-red);">
+            <a href="staff_log.html" class="nav-item" id="staffLogoutBtn" style="color: var(--danger-red);">
                 <i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>
                 Logout
             </a>
@@ -42,11 +37,7 @@
             <div class="attendance-card-header">
                 <div>
                     <h2 class="section-title">Take Attendance</h2>
-                    <p class="section-copy">
-                        Upload a classroom image, preview it in a fixed layout, and populate the present and absent lists after your ArcFace backend responds.
-                    </p>
                 </div>
-                <span class="attendance-badge">ArcFace Ready</span>
             </div>
 
             <div class="attendance-layout">
@@ -78,9 +69,6 @@
 
                     <div class="preview-footer">
                         <button type="button" class="btn-upload process-btn" id="processAttendanceBtn">Process Attendance</button>
-                        <p class="preview-note">
-                            Connect this button to your backend process and replace the placeholder preview when the image is selected.
-                        </p>
                     </div>
                 </div>
             </div>
@@ -136,19 +124,19 @@
                 <p class="section-copy">Review the student profile photos that passed RetinaFace quality checks.</p>
             </div>
 
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-label">Pending Reviews</div>
-                    <div class="stat-value" id="pending-count">0</div>
-                </div>
-                <div class="stat-card" style="border-left-color: var(--success-green);">
-                    <div class="stat-label" style="color: var(--success-green);">Total Approved</div>
-                    <div class="stat-value" id="approved-count">0</div> 
-                </div>
+            <div class="verification-view-group">
+                <button type="button" class="verification-view-btn active" id="pendingQueueBtn">
+                    Pending Reviews
+                    <span class="toggle-count-chip" id="pending-count">0</span>
+                </button>
+                <button type="button" class="verification-view-btn" id="approvedQueueBtn">
+                    Approved
+                    <span class="toggle-count-chip" id="approved-count">0</span>
+                </button>
             </div>
 
             <div class="action-card">
-                <div class="feedback-msg" style="color: var(--sidebar-text); margin-bottom: 1.5rem;">
+                <div class="feedback-msg" id="verificationQueueMessage" style="color: var(--sidebar-text); margin-bottom: 1.5rem;">
                     Review the following student profile photos. These have passed RetinaFace quality checks.
                 </div>
 
