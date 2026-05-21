@@ -3,7 +3,7 @@ uvicorn
 pymongo
 numpy
 opencv-python-headless
-retinaface
+retina-face
 insightface
 faiss-cpu
 onnxruntime
