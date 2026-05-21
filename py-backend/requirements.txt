@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pymongo
+numpy
+opencv-python-headless
+retinaface
+insightface
+faiss-cpu
+onnxruntime
+python-multipart
+pillow
+gdown
+tensorflow
