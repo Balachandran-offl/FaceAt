@@ -1,4 +1,45 @@
-node_modules/
-py-backend/venv/
+# Environment secrets
 .env
+.env.*
+!.env.example
+
+# Node.js dependencies and logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python virtual environments and caches
+py-backend/venv/
+venv/
+.venv/
 __pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Coverage and build artifacts
+.coverage
+.coverage.*
+coverage/
+dist/
+build/
+
+# Runtime logs and temp files
+*.log
+*.pid
+*.tmp
+*.temp
+py-backend/hs_err_pid*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local project notes/docs not meant for deployment
+PROJECT_FOLDER_STRUCTURE.txt
+PROJECT_REQUIREMENTS.txt
