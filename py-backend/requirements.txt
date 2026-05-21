@@ -10,4 +10,3 @@ onnxruntime
 python-multipart
 pillow
 gdown
-tensorflow==2.12.0
