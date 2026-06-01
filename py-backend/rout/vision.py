@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 import os
 import sys
-
+print("VISION.PY LOADED")
 router = APIRouter()
 
 # =========================
@@ -17,7 +17,7 @@ router = APIRouter()
 client = MongoClient("mongodb+srv://Balachandran:DyNPSTJy8HWwRxHm@attendencecluster.uicwhnh.mongodb.net/?appName=Attendencecluster")
 db = client["test"]
 embedding_collection = db["studentEmbeddings"]
-
+print("MongoDB setup complete")
 # =========================
 # FAISS SETUP
 # =========================
@@ -95,8 +95,7 @@ def build_faiss_index():
     faiss_index.add(vectors)
 
 
-# build once at startup
-build_faiss_index()
+
 
 
 # =========================
