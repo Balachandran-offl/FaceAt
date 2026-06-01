@@ -1,0 +1,124 @@
+.portal-page {
+    min-height: 100vh;
+    background:
+        linear-gradient(135deg, rgba(26, 115, 232, 0.08), rgba(28, 200, 138, 0.07)),
+        #f4f7f9;
+    padding: 24px;
+}
+
+.portal-container {
+    width: 100%;
+    max-width: 760px;
+}
+
+.portal-card {
+    background: #ffffff;
+    border: 1px solid #e0e6ed;
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(58, 59, 69, 0.08);
+    padding: 42px;
+}
+
+.portal-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.portal-kicker {
+    display: inline-block;
+    color: #1a73e8;
+    background: #f0f3ff;
+    border: 1px solid #d9e3ff;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+}
+
+.portal-header h1 {
+    color: #2f3542;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.portal-header p {
+    margin-bottom: 0;
+}
+
+.portal-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.portal-option {
+    min-height: 150px;
+    text-align: left;
+    background: #ffffff;
+    border: 2px solid #e8eaed;
+    border-radius: 16px;
+    padding: 24px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.portal-option:hover,
+.portal-option:focus-visible {
+    border-color: #1a73e8;
+    box-shadow: 0 12px 28px rgba(26, 115, 232, 0.12);
+    outline: none;
+}
+
+.portal-option:active {
+    transform: scale(0.98);
+}
+
+.staff-option {
+    border-left: 5px solid #0d47a1;
+}
+
+.student-option {
+    border-left: 5px solid #1a73e8;
+}
+
+.option-label {
+    display: block;
+    color: #2f3542;
+    font-size: 23px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.option-copy {
+    display: block;
+    color: #70757a;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+    .portal-page {
+        padding: 18px;
+    }
+
+    .portal-card {
+        padding: 28px;
+        border-radius: 16px;
+    }
+
+    .portal-header h1 {
+        font-size: 26px;
+    }
+
+    .portal-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-option {
+        min-height: 128px;
+    }
+}

@@ -1,3 +1,5 @@
+const API_BASE_URL = "https://faceat-1.onrender.com";
+
 document.getElementById("staffLoginForm").addEventListener("submit", async function(event) {
     event.preventDefault();
 
@@ -13,7 +15,7 @@ document.getElementById("staffLoginForm").addEventListener("submit", async funct
 
     try {
         // 3. Send credentials to your login endpoint
-        const response = await fetch("/api/login", {
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

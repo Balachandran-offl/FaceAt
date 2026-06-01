@@ -1,3 +1,5 @@
+const API_BASE_URL = "https://faceat-1.onrender.com";
+
 // ADDED 'async' HERE
 document.getElementById("studentRegForm").addEventListener("submit", async function(event) {
     event.preventDefault();
@@ -29,7 +31,7 @@ document.getElementById("studentRegForm").addEventListener("submit", async funct
 
     try {
         // FIXED: headers (plural) and the object format
-        const response = await fetch("/api/register", {
+        const response = await fetch(`${API_BASE_URL}/api/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

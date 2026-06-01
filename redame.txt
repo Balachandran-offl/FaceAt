@@ -1,0 +1,50 @@
+ATS Project Folder Structure
+============================
+
+ATS/
+|-- database/
+|-- frontend/
+|   |-- css/
+|   |   |-- dashboard.css
+|   |   `-- style.css
+|   |-- js/
+|   |   |-- staff_dash.js
+|   |   |-- staff_log.js
+|   |   |-- staff_reg.js
+|   |   |-- student_dash.js
+|   |   |-- student_log.js
+|   |   `-- student_reg.js
+|   |-- staff_dash.html
+|   |-- staff_log.html
+|   |-- staff_reg.html
+|   |-- student_dash.html
+|   |-- student_log.html
+|   `-- student_reg.html
+|-- models/
+|   |-- gridfs.js
+|   `-- user.js
+|-- py-backend/
+|   |-- rout/
+|   |   `-- vision.py
+|   |-- app.py
+|   |-- requirements.txt
+|   `-- runtime.txt
+|-- routes/
+|   |-- auth.js
+|   |-- quality.js
+|   `-- verify_student.js
+|-- scripts/
+|-- storage/
+|-- .env
+|-- .gitignore
+|-- package-lock.json
+|-- package.json
+|-- README.md
+|-- redame.txt
+`-- server.js
+
+Generated or dependency folders:
+|-- .git/
+|-- node_modules/
+|-- py-backend/venv/
+`-- py-backend/__pycache__/

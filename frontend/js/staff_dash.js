@@ -1,3 +1,5 @@
+const API_BASE_URL = "https://faceat-1.onrender.com";
+
 document.addEventListener('DOMContentLoaded', () => {
     setupDashboardNavigation();
     setupLogout();
@@ -109,8 +111,8 @@ function updateVerificationQueueMessage() {
 
 async function fetchVerificationImages(view) {
     const endpoint = view === 'approved'
-        ? '/api/staff/approved-verification'
-        : '/api/staff/pending-verification';
+        ? `${API_BASE_URL}/api/staff/approved-verification`
+        : `${API_BASE_URL}/api/staff/pending-verification`;
 
     const response = await fetch(endpoint);
     if (!response.ok) {
@@ -268,7 +270,7 @@ async function processDecision(rollNumber, action, triggerButton) {
     );
 
     try {
-        const response = await fetch('/api/staff/verify-decision', {
+        const response = await fetch(`${API_BASE_URL}/api/staff/verify-decision`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ rollNumber, action })
@@ -479,7 +481,7 @@ function setupAttendanceModule() {
 }
 
 async function sendAttendanceRequest(file) {
-    const attendanceApiUrl = '/api/staff/process-attendance';
+    const attendanceApiUrl = `${API_BASE_URL}/api/staff/process-attendance`;
     const formData = new FormData();
     formData.append('classroomImage', file);
 

@@ -13,7 +13,7 @@ const FormData = require("form-data");
 const multer = require("multer");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "http://localhost:8000";
+const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "https://faceat1.onrender.com";
 
 const router = express.Router();
 

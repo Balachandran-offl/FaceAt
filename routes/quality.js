@@ -8,7 +8,7 @@ const FormData = require('form-data');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const jwt = require('jsonwebtoken');
-const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "http://localhost:8000";
+const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "https://faceat1.onrender.com";
 
 router.post('/verify-quality', upload.single('profileImage'), async (req, res) => {
     try {

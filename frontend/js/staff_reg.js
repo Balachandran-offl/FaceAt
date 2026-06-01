@@ -1,3 +1,5 @@
+const API_BASE_URL = "https://faceat-1.onrender.com";
+
 document.getElementById("staffRegForm").addEventListener("submit", async function(event) {
     event.preventDefault();
 
@@ -31,7 +33,7 @@ document.getElementById("staffRegForm").addEventListener("submit", async functio
 
     // 4. Send to Backend
     try {
-        const response = await fetch("/api/register", {
+        const response = await fetch(`${API_BASE_URL}/api/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

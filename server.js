@@ -28,11 +28,11 @@ app.use('/api/quality', qualityRoutes);
 app.use('/api/staff', staffVerifyRoutes);
 
 app.get('/', (req, res) => {
-    res.redirect('/student_log.html');
+    res.redirect('/index.html');
 });
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on https://faceat-1.onrender.com`);
 });

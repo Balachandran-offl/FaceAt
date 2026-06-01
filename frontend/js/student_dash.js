@@ -1,3 +1,5 @@
+const API_BASE_URL = "https://faceat-1.onrender.com";
+
 document.addEventListener('DOMContentLoaded', () => {
     const studentPhoto = document.getElementById('studentPhoto');
     const uploadTriggerBtn = document.getElementById('uploadTriggerBtn');
@@ -90,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('/api/quality/verify-quality', {
+            const response = await fetch(`${API_BASE_URL}/api/quality/verify-quality`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -129,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('/api/staff/student-status', {
+            const response = await fetch(`${API_BASE_URL}/api/staff/student-status`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
