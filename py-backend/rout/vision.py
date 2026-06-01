@@ -27,24 +27,42 @@ student_roll_map = []
 # =========================
 # FACE MODEL (InsightFace)
 # =========================
-face_model = None
+INSIGHTFACE_MODEL_NAME = os.getenv("INSIGHTFACE_MODEL", "buffalo_l")
+INSIGHTFACE_DET_SIZE = int(os.getenv("INSIGHTFACE_DET_SIZE", "320"))
+face_detection_model = None
+face_recognition_model = None
 
 
-def get_face_model():
-    global face_model
-
-    if face_model is not None:
-        return face_model
-
+def prepare_face_model(allowed_modules):
     model = FaceAnalysis(
-        name="buffalo_l",
+        name=INSIGHTFACE_MODEL_NAME,
         providers=["CPUExecutionProvider"],
-        allowed_modules=["detection", "recognition"]
+        allowed_modules=allowed_modules
     )
-    model.prepare(ctx_id=-1)
-
-    face_model = model
+    model.prepare(
+        ctx_id=-1,
+        det_size=(INSIGHTFACE_DET_SIZE, INSIGHTFACE_DET_SIZE)
+    )
     return model
+
+
+def get_detection_model():
+    global face_detection_model
+
+    if face_detection_model is None:
+        face_detection_model = prepare_face_model(["detection"])
+
+    return face_detection_model
+
+
+def get_recognition_model():
+    global face_recognition_model
+
+    if face_recognition_model is None:
+        face_recognition_model = prepare_face_model(["detection", "recognition"])
+
+    return face_recognition_model
+
 
 
 # =========================
@@ -105,16 +123,13 @@ def build_faiss_index():
     faiss_index.add(vectors)
 
 
-
-
-
 # =========================
 # ATTENDANCE API
 # =========================
 @router.post("/process-attendance")
 async def process_attendance(file: UploadFile = File(...)):
     try:
-        model = get_face_model()
+        model = get_recognition_model()
         build_faiss_index()
 
         contents = await file.read()
@@ -128,6 +143,14 @@ async def process_attendance(file: UploadFile = File(...)):
 
         if len(faces) == 0:
             return {"success": False, "message": "No faces detected"}
+
+        if faiss_index.ntotal == 0 or len(student_roll_map) == 0:
+            return {
+                "success": True,
+                "presentStudents": [],
+                "absentStudents": [],
+                "message": "No approved student embeddings available"
+            }
 
         present_students = set()
 
@@ -145,7 +168,7 @@ async def process_attendance(file: UploadFile = File(...)):
             best_index = I[0][0]
 
             # threshold (tune this: 0.4 - 0.6 typical)
-            if best_score > 0.5:
+            if best_index >= 0 and best_score > 0.5:
                 roll = student_roll_map[best_index]
                 present_students.add(roll)
 
@@ -176,7 +199,7 @@ async def process_attendance(file: UploadFile = File(...)):
 @router.post("/generate-embedding")
 async def generate_embedding(file: UploadFile = File(...)):
     try:
-        model = get_face_model()
+        model = get_recognition_model()
 
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
@@ -212,7 +235,7 @@ async def generate_embedding(file: UploadFile = File(...)):
 @router.post("/score")
 async def get_quality_score(file: UploadFile = File(...)):
     try:
-        model = get_face_model()
+        model = get_detection_model()
 
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)

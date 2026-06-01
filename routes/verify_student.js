@@ -210,9 +210,25 @@ router.post(
                     formdata,
                     {
                         headers:
-                            formdata.getHeaders()
+                            formdata.getHeaders(),
+                        timeout: 120000
                     }
                 );
+
+            if (!fastapiresponse.data?.success) {
+                return res.status(502).json({
+
+                    success: false,
+
+                    message:
+                        fastapiresponse.data?.message ||
+                        "FastAPI attendance processing failed",
+
+                    details:
+                        fastapiresponse.data?.error ||
+                        null
+                });
+            }
 
             // Return response to frontend
             return res.status(200).json({
@@ -229,19 +245,31 @@ router.post(
         }
         catch (error) {
 
+            const status =
+                error.response?.status ||
+                500;
+            const pythonError =
+                error.response?.data;
+
             console.error(
 
                 "Attendance Processing Error:",
 
-                error.message
+                pythonError || error.message
             );
 
-            return res.status(500).json({
+            return res.status(status >= 500 ? 502 : status).json({
 
                 success: false,
 
                 message:
-                    "Attendance processing failed"
+                    pythonError?.message ||
+                    error.message ||
+                    "Attendance processing failed",
+
+                details:
+                    pythonError?.error ||
+                    null
             });
         }
     }
