@@ -105,7 +105,7 @@ function updateVerificationQueueMessage() {
     if (!queueMessage) return;
 
     queueMessage.innerText = currentVerificationView === 'pending'
-        ? 'Review the following student profile photos. These have passed RetinaFace quality checks.'
+        ? 'Review the following student profile photos. These have passed InsightFace quality checks.'
         : 'View the approved student profile photos along with their roll numbers.';
 }
 

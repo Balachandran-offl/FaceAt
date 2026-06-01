@@ -1,6 +1,5 @@
 ﻿from fastapi import APIRouter, File, UploadFile
 from pymongo import MongoClient
-from retinaface import RetinaFace
 from insightface.app import FaceAnalysis
 
 import faiss
@@ -56,6 +55,17 @@ def normalize(vec):
     if norm == 0:
         return vec
     return vec / norm
+
+
+def build_quality_response(score, confidence, faces_detected, message, **extra):
+    return {
+        "score": round(float(score), 2),
+        "confidence": round(float(confidence), 2),
+        "faces_detected": int(faces_detected),
+        "faces": int(faces_detected),
+        "message": message,
+        **extra
+    }
 
 
 # =========================
@@ -202,38 +212,53 @@ async def generate_embedding(file: UploadFile = File(...)):
 @router.post("/score")
 async def get_quality_score(file: UploadFile = File(...)):
     try:
+        model = get_face_model()
+
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         if img is None:
-            return {"score": 0, "message": "Invalid image format"}
+            return build_quality_response(
+                score=0,
+                confidence=0,
+                faces_detected=0,
+                message="Invalid image format"
+            )
 
-        faces = RetinaFace.detect_faces(img)
+        faces = model.get(img)
 
-        if not faces or not isinstance(faces, dict):
-            return {"score": 0, "message": "No face detected"}
+        if not faces:
+            return build_quality_response(
+                score=0,
+                confidence=0,
+                faces_detected=0,
+                message="No face detected"
+            )
 
         num_faces = len(faces)
-        first_key = list(faces.keys())[0]
-        confidence = faces[first_key]["score"]
+        confidence = max(float(face.det_score) for face in faces)
 
         if num_faces > 1:
-            return {
-                "score": 0.2,
-                "faces": num_faces,
-                "message": "Multiple faces detected"
-            }
+            return build_quality_response(
+                score=0.2,
+                confidence=confidence,
+                faces_detected=num_faces,
+                message="Multiple faces detected"
+            )
 
-        return {
-            "score": round(float(confidence), 2),
-            "faces": num_faces,
-            "message": "Quality analysis complete"
-        }
+        return build_quality_response(
+            score=confidence,
+            confidence=confidence,
+            faces_detected=num_faces,
+            message="Quality analysis complete"
+        )
 
     except Exception as e:
-        return {
-            "score": 0,
-            "error": str(e),
-            "message": "Server error"
-        }
+        return build_quality_response(
+            score=0,
+            confidence=0,
+            faces_detected=0,
+            message="Server error",
+            error=str(e)
+        )
