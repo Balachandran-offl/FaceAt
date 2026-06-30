@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://faceat-1.onrender.com";
+const API_BASE_URL = "https://faceat1-xxs6.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
     const studentPhoto = document.getElementById('studentPhoto');

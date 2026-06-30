@@ -13,7 +13,7 @@ const FormData = require("form-data");
 const multer = require("multer");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "https://faceat1.onrender.com";
+const FASTAPI_URL = process.env.FASTAPI_URL || process.env.PYTHON_SERVICE_URL || "https://faceat-i6vm.onrender.com";
 
 const router = express.Router();
 
@@ -206,7 +206,7 @@ router.post(
             // Send image to FastAPI
             const fastapiresponse =
                 await axios.post(
-                    `${PYTHON_SERVICE_URL}/process-attendance`,
+                    `${FASTAPI_URL}/process-attendance`,
                     formdata,
                     {
                         headers:
@@ -649,7 +649,7 @@ router.post(
                             const response =
                                 await axios.post(
 
-                                    `${PYTHON_SERVICE_URL}/generate-embedding`,
+                                    `${FASTAPI_URL}/generate-embedding`,
 
                                     form,
 

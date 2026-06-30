@@ -8,7 +8,7 @@ const FormData = require('form-data');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const jwt = require('jsonwebtoken');
-const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "https://faceat1.onrender.com";
+const FASTAPI_URL = process.env.FASTAPI_URL || process.env.PYTHON_SERVICE_URL || "https://faceat-i6vm.onrender.com";
 
 router.post('/verify-quality', upload.single('profileImage'), async (req, res) => {
     try {
@@ -31,7 +31,7 @@ router.post('/verify-quality', upload.single('profileImage'), async (req, res) =
             contentType: req.file.mimetype,
         });
 
-        const pythonResponse = await axios.post(`${PYTHON_SERVICE_URL}/score`, form, {
+        const pythonResponse = await axios.post(`${FASTAPI_URL}/score`, form, {
             headers: { ...form.getHeaders() }
         });
 
