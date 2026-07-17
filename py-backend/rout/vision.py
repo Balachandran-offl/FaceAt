@@ -1,14 +1,23 @@
 ﻿from fastapi import APIRouter, File, UploadFile
 from pymongo import MongoClient
-from insightface.app import FaceAnalysis
 
 import faiss
 import numpy as np
 import cv2
 import os
 import sys
+
+# Reduce noisy ONNXRuntime GPU discovery logs when using CPU execution only.
+os.environ.setdefault("ORT_LOG_LEVEL", "3")
+
+from insightface.app import FaceAnalysis
 print("VISION.PY LOADED")
 router = APIRouter()
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_INSIGHTFACE_ROOT = os.path.join(os.path.dirname(BASE_DIR), ".insightface")
+INSIGHTFACE_ROOT = os.getenv("INSIGHTFACE_ROOT", DEFAULT_INSIGHTFACE_ROOT)
+os.makedirs(os.path.expanduser(INSIGHTFACE_ROOT), exist_ok=True)
 
 # =========================
 # MONGO SETUP
@@ -36,6 +45,7 @@ face_recognition_model = None
 def prepare_face_model(allowed_modules):
     model = FaceAnalysis(
         name=INSIGHTFACE_MODEL_NAME,
+        root=INSIGHTFACE_ROOT,
         providers=["CPUExecutionProvider"],
         allowed_modules=allowed_modules
     )
