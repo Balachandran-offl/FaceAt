@@ -13,7 +13,7 @@ router = APIRouter()
 # =========================
 # MONGO SETUP
 # =========================
-client = MongoClient("mongodb+srv://Balachandran:DyNPSTJy8HWwRxHm@attendencecluster.uicwhnh.mongodb.net/?appName=Attendencecluster")
+client = MongoClient(os.environ["MONGO_URI"])
 db = client["test"]
 embedding_collection = db["studentEmbeddings"]
 print("MongoDB setup complete")

@@ -13,7 +13,7 @@ const FormData = require("form-data");
 const multer = require("multer");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const FASTAPI_URL = process.env.FASTAPI_URL || process.env.PYTHON_SERVICE_URL || "https://faceat-i6vm.onrender.com";
+const FASTAPI_URL = process.env.FASTAPI_URL || process.env.PYTHON_SERVICE_URL || "https://faceat-2.onrender.com";
 
 const router = express.Router();
 

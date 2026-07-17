@@ -8,7 +8,7 @@ const FormData = require('form-data');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const jwt = require('jsonwebtoken');
-const FASTAPI_URL = process.env.FASTAPI_URL || process.env.PYTHON_SERVICE_URL || "https://faceat-i6vm.onrender.com";
+const FASTAPI_URL = process.env.FASTAPI_URL || process.env.PYTHON_SERVICE_URL || "https://faceat-2.onrender.com";
 
 router.post('/verify-quality', upload.single('profileImage'), async (req, res) => {
     try {

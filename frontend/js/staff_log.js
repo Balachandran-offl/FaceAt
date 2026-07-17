@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://faceat1-xxs6.onrender.com";
+const API_BASE_URL = "https://faceatt-1.onrender.com";
 
 document.getElementById("staffLoginForm").addEventListener("submit", async function(event) {
     event.preventDefault();
